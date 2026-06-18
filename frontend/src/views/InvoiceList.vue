@@ -119,7 +119,7 @@ onMounted(async () => {
     router.push('/login')
     return
   }
-  const res = await fetch('http://localhost:5000/api/invoices', { headers })
+  const res = await fetch('https://my-app-production-d598.up.railway.app/api/invoices', { headers })
   invoices.value = await res.json()
 })
 
@@ -143,7 +143,7 @@ function editInvoice(id) {
 
 async function deleteInvoice(id) {
   if (!confirm('Are you sure you want to delete this invoice?')) return
-  await fetch(`http://localhost:5000/api/invoices/${id}`, {
+  await fetch(`https://my-app-production-d598.up.railway.app/api/invoices/${id}`, {
     method: 'DELETE',
     headers
   })

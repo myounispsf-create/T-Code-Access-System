@@ -208,7 +208,7 @@ const headers = {
 
 onMounted(async () => {
   const res = await fetch(
-    `http://localhost:5000/api/invoices/${route.params.id}`,
+    `https://my-app-production-d598.up.railway.app/api/invoices/${route.params.id}`,
     { headers }
   )
   invoice.value = await res.json()
