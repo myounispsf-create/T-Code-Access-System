@@ -262,7 +262,7 @@ const form = ref({
 
 onMounted(async () => {
   const res = await fetch(
-    `https://my-app-production-d598.up.railway.app/api/invoices/${route.params.id}`,
+    `https://my-app-production-f607.up.railway.app/api/invoices/${route.params.id}`,
     { headers }
   )
   const data = await res.json()
@@ -309,7 +309,7 @@ function removeItem(index) {
 async function updateInvoice() {
   try {
     const res = await fetch(
-      `https://my-app-production-d598.up.railway.app/api/invoices/${route.params.id}`,
+      `https://my-app-production-f607.up.railway.app/api/invoices/${route.params.id}`,
       {
         method: 'PUT',
         headers,

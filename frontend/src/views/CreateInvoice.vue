@@ -315,7 +315,7 @@ async function saveInvoice() {
   }
 
   try {
-    const res = await fetch('https://my-app-production-d598.up.railway.app/api/invoices', {
+    const res = await fetch('https://my-app-production-f607.up.railway.app/api/invoices', {
       method: 'POST',
       headers,
       body: JSON.stringify({
