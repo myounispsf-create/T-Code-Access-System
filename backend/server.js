@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 require('dotenv').config()
 
 const { router: authRoutes } = require('./routes/auth')
-const invoiceRoutes = require('./routes/invoices')
+const invoiceRoutes = require('./routes/Invoices')
 const app = express()
 const PORT = process.env.PORT || 5000
 
