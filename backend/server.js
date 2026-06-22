@@ -19,7 +19,12 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use(cors())
+app.use(cors({
+  origin: [
+    'https://invoice-app-azure-seven.vercel.app',
+    'http://localhost:5173'
+  ]
+}))
 app.use(express.json())
 
 // Routes
