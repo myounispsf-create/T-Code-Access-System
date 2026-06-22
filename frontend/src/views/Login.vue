@@ -50,9 +50,48 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 
+
 async function login() {
-  try {
-    const res = await fetch('https://my-app-production-f607.up.railway.app/api/auth/login', {
+  try {    
+
+    const postProps = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value
+      })
+    }
+            fetch('https://sonic-receiving-enhancement-mandatory.trycloudflare.com/api/auth/login', postProps)
+                 .then((resp)=> resp.json())
+                 .then((data)=>{
+                    if (data.token) {
+                          localStorage.setItem('token', data.token)
+                          localStorage.setItem('username', data.username)
+                          localStorage.setItem('companyNam', data.companyName)
+                          localStorage.setItem('role', data.role)
+                          router.push('/')
+                        } else {
+                          error.value = data.message
+                        }
+                 }).catch((e)=> {
+                  console.log("fetch error",e)
+                                            error.value = e.message
+
+                })
+    
+  } catch (err) {
+    console.log("error occured", err)
+    error.value = 'Something went wrong!'
+  }
+}
+
+
+
+async function login2() {
+  try {    
+
+    const res = await fetch('http://localhost:5000/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

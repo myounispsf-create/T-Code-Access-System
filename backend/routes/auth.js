@@ -32,9 +32,10 @@ router.post('/register', async (req, res) => {
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10)
     const user = new User({
-      username: req.body.username,
-      password: hashedPassword,
-      companyName: req.body.companyName
+  username: req.body.username,
+  password: hashedPassword,
+  companyName: req.body.companyName,
+  role: req.body.role || 'creator'
     })
     await user.save()
     res.json({ message: 'User registered successfully! ✅' })
@@ -62,9 +63,10 @@ router.post('/login', async (req, res) => {
       expiresIn: '1d' 
     })
     res.json({ 
-      token, 
-      username: user.username,
-      companyName: user.companyName
+  token, 
+  username: user.username,
+  companyName: user.companyName,
+  role: user.role        // ← add this line
     })
   } catch (err) {
     res.status(500).json({ message: err.message })

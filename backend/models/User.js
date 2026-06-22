@@ -13,7 +13,12 @@ const userSchema = new mongoose.Schema({
   companyName: {
     type: String,
     required: true
-  }
+  },
+  role: {
+  type: String,
+  enum: ['creator', 'manager', 'finance', 'director'],
+  default: 'creator'
+}
 }, { timestamps: true })
 
 module.exports = mongoose.model('User', userSchema)

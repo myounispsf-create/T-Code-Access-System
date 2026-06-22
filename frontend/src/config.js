@@ -1,3 +1,3 @@
-const API_URL = 'https://my-app-production-f607.up.railway.app'
+const API_URL = 'https://localhost:5000'
 
 export default API_URL

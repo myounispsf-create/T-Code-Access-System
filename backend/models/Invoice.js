@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const itemSchema = new mongoose.Schema({
+const lineItems = new mongoose.Schema({
   itemNumber: String,
   description: String,
   unitPrice: Number,
@@ -44,13 +44,30 @@ const invoiceSchema = new mongoose.Schema({
   shippingTerms: String,
 
   // Child Data - Items
-  items: [itemSchema],
+  items: [lineItems],
 
   // Totals
   totalDiscount: Number,
   subtotal: Number,
   salesTax: Number,
-  total: Number
+  total: Number,
+
+  // Add this after "total" field
+status: {
+  type: String,
+  enum: ['draft', 'pending_manager', 'pending_finance', 'pending_director', 'approved'],
+  default: 'draft'
+},
+approvals: [
+  {
+    role: String,           // who approved (manager/finance/director)
+    approvedBy: String,     // username of approver
+    date: {
+      type: Date,
+      default: Date.now     // auto set current date
+    }
+  }
+]
 
 }, { timestamps: true })
 

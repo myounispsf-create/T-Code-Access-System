@@ -5,7 +5,6 @@ require('dotenv').config()
 
 const { router: authRoutes } = require('./routes/auth')
 const invoiceRoutes = require('./routes/invoices')
-
 const app = express()
 const PORT = process.env.PORT || 5000
 

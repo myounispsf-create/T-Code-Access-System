@@ -25,6 +25,16 @@
         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 mb-4 text-lg focus:outline-none focus:border-green-400"
       />
 
+      <select
+  v-model="role"
+  class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 mb-4 text-lg focus:outline-none focus:border-green-400"
+>
+  <option value="creator">Creator</option>
+  <option value="manager">Manager</option>
+  <option value="finance">Finance</option>
+  <option value="director">Director</option>
+</select>
+
       <button
         @click="register"
         class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg text-lg transition"
@@ -56,18 +66,20 @@ const router = useRouter()
 const companyName = ref('')
 const username = ref('')
 const password = ref('')
+const role = ref('creator')
 const error = ref('')
 const success = ref('')
 
 async function register() {
   try {
-    const res = await fetch('https://my-app-production-f607.up.railway.app/api/auth/register', {
+    const res = await fetch('https://sonic-receiving-enhancement-mandatory.trycloudflare.com/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         companyName: companyName.value,
         username: username.value,
-        password: password.value
+        password: password.value,
+        role: role.value
       })
     })
     const data = await res.json()
