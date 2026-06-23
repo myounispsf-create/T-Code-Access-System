@@ -208,7 +208,7 @@ const headers = {
 
 onMounted(async () => {
   const res = await fetch(
-    `https://sonic-receiving-enhancement-mandatory.trycloudflare.com/api/invoices/${route.params.id}`,
+    `https://invoice-backend-5iv0.onrender.com/api/invoices/${route.params.id}`,
     { headers }
   )
   invoice.value = await res.json()

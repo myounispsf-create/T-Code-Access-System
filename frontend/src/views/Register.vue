@@ -72,7 +72,7 @@ const success = ref('')
 
 async function register() {
   try {
-    const res = await fetch('https://sonic-receiving-enhancement-mandatory.trycloudflare.com/api/auth/register', {
+    const res = await fetch('https://invoice-backend-5iv0.onrender.com/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -166,7 +166,7 @@ function editInvoice(id) {
 
 async function deleteInvoice(id) {
   if (!confirm('Are you sure you want to delete this invoice?')) return
-  await fetch(`https://sonic-receiving-enhancement-mandatory.trycloudflare.com/api/invoices/${id}`, {
+  await fetch(`https://invoice-backend-5iv0.onrender.com/api/invoices/${id}`, {
     method: 'DELETE',
     headers
   })

@@ -315,7 +315,7 @@ async function saveInvoice() {
   }
 
   try {
-    const res = await fetch('https://sonic-receiving-enhancement-mandatory.trycloudflare.com/api/invoices', {
+    const res = await fetch('https://invoice-backend-5iv0.onrender.com/api/invoices', {
       method: 'POST',
       headers,
       body: JSON.stringify({

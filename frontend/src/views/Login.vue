@@ -62,7 +62,7 @@ async function login() {
         password: password.value
       })
     }
-            fetch('https://sonic-receiving-enhancement-mandatory.trycloudflare.com/api/auth/login', postProps)
+            fetch('https://invoice-backend-5iv0.onrender.com/api/auth/login', postProps)
                  .then((resp)=> resp.json())
                  .then((data)=>{
                     if (data.token) {

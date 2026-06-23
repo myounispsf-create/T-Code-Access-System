@@ -309,7 +309,7 @@ function removeItem(index) {
 async function updateInvoice() {
   try {
     const res = await fetch(
-      `https://sonic-receiving-enhancement-mandatory.trycloudflare.com/api/invoices/${route.params.id}`,
+      `https://invoice-backend-5iv0.onrender.com/api/invoices/${route.params.id}`,
       {
         method: 'PUT',
         headers,
