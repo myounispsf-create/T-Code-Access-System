@@ -141,7 +141,7 @@ onMounted(async () => {
     router.push('/login')
     return
   }
-  const res = await fetch('http://localhost:5000/api/invoices', { headers })
+  const res = await fetch(`${API_URL}/api/invoices`, { headers })
   invoices.value = await res.json()
 })
 
