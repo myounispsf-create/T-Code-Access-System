@@ -39,7 +39,7 @@
       </div>
 
       <!-- Desktop Table -->
-      <div v-else class="hidden md:block bg-white rounded-2xl shadow overflow-hidden">
+      <div v-if="!loading" class="hidden md:block bg-white rounded-2xl shadow overflow-hidden">
         <table class="w-full">
           <thead class="bg-blue-800 text-white">
             <tr>
@@ -102,16 +102,15 @@
         </table>
         <div v-if="filteredInvoices.length === 0" class="text-center py-10 text-gray-400">
           <p class="text-lg">No invoices found!</p>
-          <p class="text-sm mt-1">{{ search ? 'Try a different search term' : 'Click "+ New Invoice" to create one' }}</p>
+          <p class="text-sm mt-1">{{ search ? 'Try a different search term' : 'Click "+ New Invoice" to create one'
+            }}</p>
         </div>
       </div>
 
       <!-- Mobile Cards -->
-      <div v-else class="md:hidden space-y-3">
+      <div v-if="!loading" class="md:hidden space-y-3">
         <div v-for="invoice in filteredInvoices" :key="invoice._id"
           class="bg-white rounded-2xl shadow-md p-4 border-l-4 border-blue-600">
-          
-          <!-- Card Header -->
           <div class="flex justify-between items-start mb-3">
             <div>
               <p class="font-bold text-blue-700 text-lg">#{{ invoice.invoiceNumber }}</p>
@@ -121,14 +120,10 @@
               {{ statusLabel(invoice.status) }}
             </span>
           </div>
-
-          <!-- Card Details -->
           <div class="flex justify-between items-center mb-3 text-sm text-gray-500">
             <span>📅 {{ invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : 'N/A' }}</span>
             <span class="font-bold text-gray-800">Rs {{ invoice.total }}</span>
           </div>
-
-          <!-- Card Actions -->
           <div class="flex gap-2 flex-wrap">
             <button @click="viewInvoice(invoice._id)"
               class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm flex-1 text-center">
@@ -160,12 +155,11 @@
             </template>
           </div>
         </div>
-
-        <!-- Empty State Mobile -->
         <div v-if="filteredInvoices.length === 0"
           class="text-center py-10 text-gray-400 bg-white rounded-2xl shadow">
           <p class="text-lg">No invoices found!</p>
-          <p class="text-sm mt-1">{{ search ? 'Try a different search term' : 'Click "+ New Invoice" to create one' }}</p>
+          <p class="text-sm mt-1">{{ search ? 'Try a different search term' : 'Click "+ New Invoice" to create one'
+            }}</p>
         </div>
       </div>
 
