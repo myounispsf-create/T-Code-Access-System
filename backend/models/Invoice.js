@@ -10,6 +10,7 @@ const lineItems = new mongoose.Schema({
 })
 
 const invoiceSchema = new mongoose.Schema({
+  organizationId: { type: mongoose.Schema.Types.ObjectId, default: null, index: true },
   // Master Data
   invoiceNumber: {
     type: String,

@@ -1,166 +1,75 @@
 const express = require('express')
-const router = express.Router()
+const mongoose = require('mongoose')
 const Invoice = require('../models/Invoice')
 const { authMiddleware } = require('./auth')
-
-// GET - get all invoices for logged in user
-router.get('/', authMiddleware, async (req, res) => {
-  try {
-    const user = await require('../models/User').findById(req.userId)
-    let invoices
-
-   if (user.role === 'creator') {
-  // Creator sees ALL his invoices with any status
-  invoices = await Invoice.find({ 
-    user: req.userId
-  }).sort({ createdAt: -1 })
-    } else if (user.role === 'manager') {
-      // Manager sees invoices pending his approval
-      invoices = await Invoice.find({ 
-        status: 'pending_manager'
-      }).sort({ createdAt: -1 })
-    } else if (user.role === 'finance') {
-      // Finance sees invoices pending his approval
-      invoices = await Invoice.find({ 
-        status: 'pending_finance'
-      }).sort({ createdAt: -1 })
-    } else if (user.role === 'director') {
-      // Director sees invoices pending his approval
-      invoices = await Invoice.find({ 
-        status: 'pending_director'
-      }).sort({ createdAt: -1 })
-    }
-
-    res.json(invoices)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+const router = express.Router()
+const stages = { manager: 'pending_manager', finance: 'pending_finance', director: 'pending_director' }
+const nextStage = { manager: 'pending_finance', finance: 'pending_director', director: 'approved' }
+const fields = ['invoiceNumber', 'customerName', 'customerId', 'customerAddress', 'customerPhone', 'recipientName', 'recipientAddress', 'recipientPhone', 'paymentDue', 'salesperson', 'paymentTerms', 'deliveryDate', 'shippingMethod', 'shippingTerms', 'items', 'totalDiscount', 'subtotal', 'salesTax', 'total']
+function editable(body) {
+  const data = {}
+  for (const field of fields) if (Object.hasOwn(body || {}, field)) data[field] = body[field]
+  if (Array.isArray(data.items)) data.items = data.items.map(item => {
+    const clean = {}
+    for (const key of ['itemNumber', 'description', 'unitPrice', 'quantity', 'discount', 'lineTotal']) if (Object.hasOwn(item || {}, key)) clean[key] = item[key]
+    return clean
+  })
+  return data
+}
+function reviewScope(user) {
+  if (!stages[user.role] || !user.organizationId) return null
+  return { organizationId: user.organizationId, status: stages[user.role], user: { $ne: user._id } }
+}
+router.use(authMiddleware)
+router.param('id', (req, res, next, id) => {
+  if (!mongoose.isObjectIdOrHexString(id)) return res.status(400).json({ message: 'Invalid invoice ID' })
+  next()
 })
-
-// GET - get single invoice
-router.get('/:id', authMiddleware, async (req, res) => {
-  try {
-    const invoice = await Invoice.findById(req.params.id)
-    res.json(invoice)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+function creator(req, res, next) {
+  if (req.user.role !== 'creator') return res.status(403).json({ message: 'Creator access required' })
+  next()
+}
+router.get('/', async (req, res) => {
+  const scope = req.user.role === 'creator' ? { user: req.userId } : reviewScope(req.user)
+  res.json(scope ? await Invoice.find(scope).sort({ createdAt: -1 }) : [])
 })
-
-// POST - create new invoice
-router.post('/', authMiddleware, async (req, res) => {
-  try {
-    const invoice = new Invoice({
-      ...req.body,
-      user: req.userId
-    })
-    await invoice.save()
-    res.json(invoice)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+router.get('/:id', async (req, res) => {
+  const scope = req.user.role === 'creator' ? { user: req.userId } : reviewScope(req.user)
+  const invoice = scope && await Invoice.findOne({ ...scope, _id: req.params.id })
+  if (!invoice) return res.status(404).json({ message: 'Invoice not found' })
+  res.json(invoice)
 })
-
-// PUT - update invoice
-router.put('/:id', authMiddleware, async (req, res) => {
-  try {
-    const invoice = await Invoice.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    )
-    res.json(invoice)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+router.post('/', creator, async (req, res) => {
+  const invoice = await Invoice.create({ ...editable(req.body), user: req.userId, organizationId: req.user.organizationId || null, status: 'draft', approvals: [] })
+  res.status(201).json(invoice)
 })
-
-// DELETE - delete invoice
-router.delete('/:id', authMiddleware, async (req, res) => {
-  try {
-    await Invoice.findByIdAndDelete(req.params.id)
-    res.json({ message: 'Invoice deleted!' })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+router.put('/:id', creator, async (req, res) => {
+  const invoice = await Invoice.findOneAndUpdate({ _id: req.params.id, user: req.userId, status: 'draft' }, { $set: editable(req.body) }, { returnDocument: 'after', runValidators: true })
+  if (!invoice) return res.status(404).json({ message: 'Editable draft not found' })
+  res.json(invoice)
 })
-
-// POST - submit invoice for approval
-router.post('/submit/:id', authMiddleware, async (req, res) => {
-  try {
-    const invoice = await Invoice.findById(req.params.id)
-    if (invoice.status !== 'draft') {
-      return res.status(400).json({ message: 'Invoice already submitted!' })
-    }
-    invoice.status = 'pending_manager'
-    await invoice.save()
-    res.json({ message: 'Invoice submitted for approval! ✅', invoice })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+router.delete('/:id', creator, async (req, res) => {
+  const invoice = await Invoice.findOneAndDelete({ _id: req.params.id, user: req.userId, status: 'draft' })
+  if (!invoice) return res.status(404).json({ message: 'Editable draft not found' })
+  res.json({ message: 'Invoice deleted' })
 })
-
-// POST - approve invoice
-router.post('/approve/:id', authMiddleware, async (req, res) => {
-  try {
-    const user = await require('../models/User').findById(req.userId)
-    const invoice = await Invoice.findById(req.params.id)
-
-    // Check correct role is approving
-    if (user.role === 'manager' && invoice.status === 'pending_manager') {
-      invoice.status = 'pending_finance'
-      invoice.approvals.push({
-        role: 'manager',
-        approvedBy: user.username,
-        date: new Date()
-      })
-    } else if (user.role === 'finance' && invoice.status === 'pending_finance') {
-      invoice.status = 'pending_director'
-      invoice.approvals.push({
-        role: 'finance',
-        approvedBy: user.username,
-        date: new Date()
-      })
-    } else if (user.role === 'director' && invoice.status === 'pending_director') {
-      invoice.status = 'approved'
-      invoice.approvals.push({
-        role: 'director',
-        approvedBy: user.username,
-        date: new Date()
-      })
-    } else {
-      return res.status(400).json({ message: 'You cannot approve this invoice!' })
-    }
-
-    await invoice.save()
-    res.json({ message: 'Invoice approved! ✅', invoice })
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
+router.post('/submit/:id', creator, async (req, res) => {
+  if (!req.user.organizationId) return res.status(403).json({ message: 'Administrator must assign your organization before submission' })
+  const invoice = await Invoice.findOneAndUpdate({ _id: req.params.id, user: req.userId, organizationId: req.user.organizationId, status: 'draft' }, { $set: { status: 'pending_manager' } }, { returnDocument: 'after', runValidators: true })
+  if (!invoice) return res.status(404).json({ message: 'Submittable draft not found' })
+  res.json({ message: 'Invoice submitted for approval', invoice })
 })
-
-// POST - reject invoice
-router.post('/reject/:id', authMiddleware, async (req, res) => {
-  try {
-    const user = await require('../models/User').findById(req.userId)
-    const invoice = await Invoice.findById(req.params.id)
-
-    // Check correct role is rejecting
-    if (
-      (user.role === 'manager' && invoice.status === 'pending_manager') ||
-      (user.role === 'finance' && invoice.status === 'pending_finance') ||
-      (user.role === 'director' && invoice.status === 'pending_director')
-    ) {
-      invoice.status = 'draft'    // send back to creator
-      invoice.approvals = []      // clear all approvals
-      await invoice.save()
-      res.json({ message: 'Invoice rejected! ❌', invoice })
-    } else {
-      return res.status(400).json({ message: 'You cannot reject this invoice!' })
-    }
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-})
-
+for (const action of ['approve', 'reject']) {
+  router.post(`/${action}/:id`, async (req, res) => {
+    const scope = reviewScope(req.user)
+    if (!scope) return res.status(403).json({ message: 'Assigned reviewer access required' })
+    const update = action === 'approve'
+      ? { $set: { status: nextStage[req.user.role] }, $push: { approvals: { role: req.user.role, approvedBy: req.user.username, date: new Date() } } }
+      : { $set: { status: 'draft', approvals: [] } }
+    // Include state in the atomic write to prevent duplicate approvals and skipped stages.
+    const invoice = await Invoice.findOneAndUpdate({ ...scope, _id: req.params.id }, update, { returnDocument: 'after', runValidators: true })
+    if (!invoice) return res.status(404).json({ message: 'Invoice not found at your approval stage' })
+    res.json({ message: action === 'approve' ? 'Invoice approved' : 'Invoice returned to draft', invoice })
+  })
+}
 module.exports = router

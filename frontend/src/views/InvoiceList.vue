@@ -21,11 +21,13 @@
       <!-- Top Bar -->
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold text-gray-700">All Invoices</h2>
-        <button @click="$router.push('/create')"
+        <button v-if="role === 'creator'" @click="$router.push('/create')"
           class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-bold transition text-sm">
           + New Invoice
         </button>
       </div>
+
+      <p v-if="error" class="text-red-600 mb-4" role="alert">{{ error }}</p>
 
       <!-- Search -->
       <div class="mb-4">
@@ -71,7 +73,7 @@
                     class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-lg text-xs">
                     👁️ View
                   </button>
-                  <template v-if="role === 'creator'">
+                  <template v-if="role === 'creator' && invoice.status === 'draft'">
                     <button @click="editInvoice(invoice._id)"
                       class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded-lg text-xs">
                       ✏️ Edit
@@ -129,7 +131,7 @@
               class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm flex-1 text-center">
               👁️ View
             </button>
-            <template v-if="role === 'creator'">
+            <template v-if="role === 'creator' && invoice.status === 'draft'">
               <button @click="editInvoice(invoice._id)"
                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg text-sm flex-1 text-center">
                 ✏️ Edit
@@ -176,6 +178,7 @@ const router = useRouter()
 const invoices = ref([])
 const search = ref('')
 const loading = ref(true)
+const error = ref('')
 const username = ref(localStorage.getItem('username') || '')
 const companyName = ref(localStorage.getItem('companyName') || '')
 const role = ref(localStorage.getItem('role') || 'creator')
@@ -191,9 +194,13 @@ onMounted(async () => {
     router.push('/login')
     return
   }
-  const res = await fetch(`${API_URL}/api/invoices`, { headers })
-  invoices.value = await res.json()
-  loading.value = false
+  try {
+    const res = await fetch(`${API_URL}/api/invoices`, { headers })
+    const data = await res.json()
+    if (!res.ok) { error.value = data.message; return }
+    invoices.value = data
+  } catch { error.value = 'Unable to load invoices' }
+  finally { loading.value = false }
 })
 
 const filteredInvoices = computed(() => {
@@ -231,29 +238,39 @@ function editInvoice(id) { router.push(`/edit/${id}`) }
 
 async function deleteInvoice(id) {
   if (!confirm('Are you sure you want to delete this invoice?')) return
-  await fetch(`${API_URL}/api/invoices/${id}`, { method: 'DELETE', headers })
+  if (!await performAction(`${API_URL}/api/invoices/${id}`, 'DELETE')) return
   invoices.value = invoices.value.filter(i => i._id !== id)
 }
 
 async function submitInvoice(id) {
   if (!confirm('Submit this invoice for approval?')) return
-  await fetch(`${API_URL}/api/invoices/submit/${id}`, { method: 'POST', headers })
-  invoices.value = invoices.value.filter(i => i._id !== id)
+  if (!await performAction(`${API_URL}/api/invoices/submit/${id}`, 'POST')) return
+  invoices.value = invoices.value.map(i => i._id === id ? { ...i, status: 'pending_manager' } : i)
   alert('Invoice submitted for approval! ✅')
 }
 
 async function approveInvoice(id) {
   if (!confirm('Approve this invoice?')) return
-  await fetch(`${API_URL}/api/invoices/approve/${id}`, { method: 'POST', headers })
+  if (!await performAction(`${API_URL}/api/invoices/approve/${id}`, 'POST')) return
   invoices.value = invoices.value.filter(i => i._id !== id)
   alert('Invoice approved! ✅')
 }
 
 async function rejectInvoice(id) {
   if (!confirm('Reject this invoice?')) return
-  await fetch(`${API_URL}/api/invoices/reject/${id}`, { method: 'POST', headers })
+  if (!await performAction(`${API_URL}/api/invoices/reject/${id}`, 'POST')) return
   invoices.value = invoices.value.filter(i => i._id !== id)
   alert('Invoice rejected! ❌')
+}
+
+async function performAction(url, method) {
+  error.value = ''
+  try {
+    const res = await fetch(url, { method, headers })
+    const data = await res.json()
+    if (!res.ok) { error.value = data.message; return false }
+    return true
+  } catch { error.value = 'Unable to reach the server'; return false }
 }
 
 function logout() {

@@ -230,6 +230,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import API_URL from '../config.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -262,10 +263,12 @@ const form = ref({
 
 onMounted(async () => {
   const res = await fetch(
-    `http://localhost:5000/api/invoices/${route.params.id}`,
+    `${API_URL}/api/invoices/${route.params.id}`,
     { headers }
   )
   const data = await res.json()
+  if (!res.ok) { error.value = data.message; return }
+  if (data.status !== 'draft') { error.value = 'Only drafts can be edited'; return }
   form.value = {
     ...data,
     paymentDue: data.paymentDue ? data.paymentDue.split('T')[0] : '',
@@ -309,7 +312,7 @@ function removeItem(index) {
 async function updateInvoice() {
   try {
     const res = await fetch(
-      `https://invoice-backend-5iv0.onrender.com/api/invoices/${route.params.id}`,
+      `${API_URL}/api/invoices/${route.params.id}`,
       {
         method: 'PUT',
         headers,

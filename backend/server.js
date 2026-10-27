@@ -1,41 +1,14 @@
-const express = require('express')
-const cors = require('cors')
-const mongoose = require('mongoose')
 require('dotenv').config()
-
-const { router: authRoutes } = require('./routes/auth')
-const invoiceRoutes = require('./routes/Invoices')
-const app = express()
-const PORT = process.env.PORT || 5000
-
-// Fix CORS
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204)
-  }
-  next()
+const mongoose = require('mongoose')
+const { createApp } = require('./app')
+async function start() {
+  if (!process.env.MONGO_URI || !process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('Set MONGO_URI and a JWT_SECRET of at least 32 characters')
+  const app = createApp()
+  await mongoose.connect(process.env.MONGO_URI)
+  app.listen(process.env.PORT || 5000, () => console.log('Invoice API ready'))
+}
+if (require.main === module) start().catch(() => {
+  console.error('API startup failed; check database connectivity and environment configuration')
+  process.exitCode = 1
 })
-
-app.use(cors({
-  origin: [
-    'https://invoice-app-azure-seven.vercel.app',
-    'http://localhost:5173'
-  ]
-}))
-app.use(express.json())
-
-// Routes
-app.use('/api/auth', authRoutes)
-app.use('/api/invoices', invoiceRoutes)
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB Connected!'))
-  .catch(err => console.log('❌ MongoDB Error:', err))
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
-})
+module.exports = { start }

@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
+  // Assigned through trusted administration, never public registration.
+  organizationId: { type: mongoose.Schema.Types.ObjectId, default: null, index: true },
   username: {
     type: String,
     required: true,

@@ -18,8 +18,9 @@
       </div>
     </div>
 
+    <p v-if="error" class="text-red-600 p-4" role="alert">{{ error }}</p>
     <!-- Invoice Content -->
-    <div class="max-w-4xl mx-auto p-4" id="invoice-content">
+    <div v-if="!error" class="max-w-4xl mx-auto p-4" id="invoice-content">
 
       <!-- Company Name -->
       <div class="mb-4">
@@ -214,6 +215,7 @@ import API_URL from '../config.js'
 const router = useRouter()
 const route = useRoute()
 const invoice = ref({})
+const error = ref('')
 const companyName = ref(localStorage.getItem('companyName') || '')
 const token = localStorage.getItem('token')
 
@@ -223,8 +225,12 @@ const headers = {
 }
 
 onMounted(async () => {
-  const res = await fetch(`${API_URL}/api/invoices/${route.params.id}`, { headers })
-  invoice.value = await res.json()
+  try {
+    const res = await fetch(`${API_URL}/api/invoices/${route.params.id}`, { headers })
+    const data = await res.json()
+    if (!res.ok) { error.value = data.message; return }
+    invoice.value = data
+  } catch { error.value = 'Unable to load invoice' }
 })
 
 const emptyRows = computed(() => {
