@@ -16,7 +16,7 @@ function createApp() {
   app.use(express.json({ limit: '100kb' }))
   app.get('/health', (req, res) => res.json({ status: 'ok' }))
   app.use('/api/auth', require('./routes/auth').router)
-  app.use('/api/invoices', require('./routes/Invoices'))
+  app.use('/api/tcode-requests', require('./routes/TCodeRequests'))
   app.use((err, req, res, next) => {
     if (err.code === 11000) return res.status(409).json({ message: 'Record already exists' })
     if (['ValidationError', 'CastError'].includes(err.name) || err.status === 400) return res.status(400).json({ message: 'Invalid request data' })

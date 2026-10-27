@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
     <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
       <h1 class="text-3xl font-bold text-center text-blue-800 mb-2">
-        📄 Invoice App
+        📄 T-Code Access System
       </h1>
       <p class="text-center text-gray-500 mb-6">Login to your account</p>
 

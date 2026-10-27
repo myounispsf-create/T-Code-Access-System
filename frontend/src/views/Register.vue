@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
     <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
       <h1 class="text-3xl font-bold text-center text-blue-800 mb-2">
-        📄 Invoice App
+        📄 T-Code Access System
       </h1>
       <p class="text-center text-gray-500 mb-6">Create your account</p>
 
@@ -25,7 +25,7 @@
         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 mb-4 text-lg focus:outline-none focus:border-green-400"
       />
 
-      <p class="text-sm text-gray-500 mb-4">New accounts create invoices. Your administrator assigns approval access.</p>
+      <p class="text-sm text-gray-500 mb-4">New accounts create requests. Your administrator assigns approval access.</p>
 
       <button
         @click="register"
