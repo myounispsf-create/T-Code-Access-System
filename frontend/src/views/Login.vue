@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
     <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
       <h1 class="text-3xl font-bold text-center text-blue-800 mb-2">
-        📄 Invoice App
+        📄 T-Code Access System
       </h1>
       <p class="text-center text-gray-500 mb-6">Login to your account</p>
 
@@ -44,72 +44,22 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-
+import API_URL from '../config.js'
 const router = useRouter()
 const username = ref('')
 const password = ref('')
 const error = ref('')
-
-
 async function login() {
-  try {    
-
-    const postProps = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: username.value,
-        password: password.value
-      })
-    }
-            fetch('https://invoice-backend-5iv0.onrender.com/api/auth/login', postProps)
-                 .then((resp)=> resp.json())
-                 .then((data)=>{
-                    if (data.token) {
-                          localStorage.setItem('token', data.token)
-                          localStorage.setItem('username', data.username)
-                          localStorage.setItem('companyNam', data.companyName)
-                          localStorage.setItem('role', data.role)
-                          router.push('/')
-                        } else {
-                          error.value = data.message
-                        }
-                 }).catch((e)=> {
-                  console.log("fetch error",e)
-                                            error.value = e.message
-
-                })
-    
-  } catch (err) {
-    console.log("error occured", err)
-    error.value = 'Something went wrong!'
-  }
-}
-
-
-
-async function login2() {
-  try {    
-
-    const res = await fetch('http://localhost:5000/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: username.value,
-        password: password.value
-      })
+  error.value = ''
+  try {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username.value, password: password.value })
     })
     const data = await res.json()
-    if (data.token) {
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('username', data.username)
-      localStorage.setItem('companyName', data.companyName)
-      router.push('/')
-    } else {
-      error.value = data.message
-    }
-  } catch (err) {
-    error.value = 'Something went wrong!'
-  }
+    if (!res.ok) { error.value = data.message; return }
+    for (const key of ['token', 'username', 'companyName', 'role']) localStorage.setItem(key, data[key])
+    router.push('/')
+  } catch { error.value = 'Unable to reach the server. Please try again.' }
 }
 </script>

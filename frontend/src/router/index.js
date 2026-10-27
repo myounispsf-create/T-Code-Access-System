@@ -1,32 +1,32 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
-import InvoiceList from '../views/InvoiceList.vue'
-import CreateInvoice from '../views/CreateInvoice.vue'
-import InvoiceDetail from '../views/InvoiceDetail.vue'
-import EditInvoice from '../views/EditInvoice.vue'
+import TCodeRequestList from '../views/TCodeRequestList.vue'
+import CreateTCodeRequest from '../views/CreateTCodeRequest.vue'
+import TCodeRequestDetail from '../views/TCodeRequestDetail.vue'
+import EditTCodeRequest from '../views/EditTCodeRequest.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      component: InvoiceList,
+      component: TCodeRequestList,
       meta: { requiresAuth: true }
     },
     {
       path: '/create',
-      component: CreateInvoice,
+      component: CreateTCodeRequest,
       meta: { requiresAuth: true }
     },
     {
-      path: '/invoice/:id',
-      component: InvoiceDetail,
+      path: '/tcode-request/:id',
+      component: TCodeRequestDetail,
       meta: { requiresAuth: true }
     },
     {
       path: '/edit/:id',
-      component: EditInvoice,
+      component: EditTCodeRequest,
       meta: { requiresAuth: true }
     },
     {

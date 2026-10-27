@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100 flex items-center justify-center">
     <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
       <h1 class="text-3xl font-bold text-center text-blue-800 mb-2">
-        📄 Invoice App
+        📄 T-Code Access System
       </h1>
       <p class="text-center text-gray-500 mb-6">Create your account</p>
 
@@ -25,15 +25,7 @@
         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 mb-4 text-lg focus:outline-none focus:border-green-400"
       />
 
-      <select
-  v-model="role"
-  class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 mb-4 text-lg focus:outline-none focus:border-green-400"
->
-  <option value="creator">Creator</option>
-  <option value="manager">Manager</option>
-  <option value="finance">Finance</option>
-  <option value="director">Director</option>
-</select>
+      <p class="text-sm text-gray-500 mb-4">New accounts create requests. Your administrator assigns approval access.</p>
 
       <button
         @click="register"
@@ -61,25 +53,24 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import API_URL from '../config.js'
 
 const router = useRouter()
 const companyName = ref('')
 const username = ref('')
 const password = ref('')
-const role = ref('creator')
 const error = ref('')
 const success = ref('')
 
 async function register() {
   try {
-    const res = await fetch('https://invoice-backend-5iv0.onrender.com/api/auth/register', {
+    const res = await fetch(`${API_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         companyName: companyName.value,
         username: username.value,
-        password: password.value,
-        role: role.value
+        password: password.value
       })
     })
     const data = await res.json()
